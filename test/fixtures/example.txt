@@ -1,0 +1,28 @@
+// This is a comment. Begin a line with // to hide it from the final, generated output (HTML, Kindle, PDF, etc).
+//
+// Note: you are viewing "example.txt" -- this is merely an example of a well-formatted Pubrunner document.
+//
+// Pubrunner projects contain a "config.yml" file. The "document" key tells pubrunner where to look for your novel's text. You should edit that file, then re-run pubrunner to generate your desired output formats.
+
+// (Feel free to copy this example into your document to test pubrunner functionality.)
+
+# This Is A Chapter Name
+
+Chapters are denoted by a pound sign. (Note: the pound sign must be the first character of a line.)
+	Pubrunner plays nice with tabs. A single tab will cause the line to be indented, just like you'd expect in a novel.
+	"How about dialog?" she asks.
+	"It's indented if the line begins with a tab character, just like any other line," he replies.
+	"Great!"
+
+How about formatting, like bold and italics? **This text** will be bold, because it's surrounded by a pair of double asterisks.
+	*This text* will be in italics, as it's surrounded by single asterisks. Pubrunner is designed to handle limited formatting (mainly: bold, italics, chapter headings, tab indentation and chapter sections).
+
+
+Start new chapter sections like this. Leave a line break or two for separation (above two lines), then begin a new paragraph (omit the tab character for the paragraph to be left-justified, like this one).
+
+#
+
+This is a new chapter. You should familiarize yourself with the project's "config.yml" settings. This file is plaintext; it can be opened, edited and saved using any text editor of your choosing.
+	The setting "auto_increment_chapter_names" will allow you to specify chapters like this one, where the chapter name is left blank. By default, auto-incremented chapters will be named "Chapter 1", "Chapter 2", "Chapter 3", etc.
+	If you set "auto_increment_chapter_names" to false, then you will need to specify chapter names, just like the first chapter in this example ("This Is A Chapter Name"). When auto-increment is set to true, any text that comes after the pound sign is simply ignored.
+	Good luck with your project, and may the schwartz be with you.

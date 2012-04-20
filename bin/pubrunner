@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
  
 require 'pubrunner'
+#require '../lib/pubrunner.rb'
 
-Pubrunner::CommandLine.new(ARGV)
+Pubrunner::CommandLine.new(ENV['PWD'], ARGV)

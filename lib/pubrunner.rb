@@ -1,8 +1,5 @@
 Dir[File.dirname(__FILE__) + '/pubrunner/*.rb'].each { |file| require file }
 
-# require "pubrunner/version"
-# require "pubrunner/transformer"
-
 module Pubrunner
 
   class CommandLine

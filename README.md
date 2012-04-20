@@ -1,18 +1,14 @@
 # Pubrunner
 
-TODO: Write a gem description
+Do publishing androids dream of electric sheep?
+
+Pubrunner is a command-line tool and library that converts simple text files (e.g. novels) into distributable formats: Kindle, HTML, PDF, and Octopress.
+
+Pubrunner uses a simplified version of Markdown, called Pubdown. Pubdown allows basic formatting, such as **bold**, *italics* and most importantly, tab-indentation aware publishing.
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-    gem 'pubrunner'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
+Install the pubrunner gem:
 
     $ gem install pubrunner
 
