@@ -1,0 +1,62 @@
+<html>
+<head>
+<title>##TITLE##</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<style type="text/css">
+h1 {
+  text-align: center;
+  text-indent: 0;
+}
+h2 {
+  text-align: left;
+  text-indent: 0;
+}
+p {
+  text-indent: 2em;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6em;
+  font-size: 1.1em;
+}
+.chapter { page-break-before: always; }
+.center {
+  text-align: center;
+  text-indent: 0;
+}
+.noind {
+  text-indent: 0;
+}
+
+body {
+    display: block;
+    page: main;
+    counter-reset: page 1
+}
+
+@page main {
+    @bottom {
+        content: counter(page)
+    }
+}
+
+</style>
+</head>
+<body>
+
+<p height="160">&nbsp;</p>
+<h1>##TITLE##</h1>
+
+<p height="160">&nbsp;</p>
+<h1>##AUTHOR##</h1>
+
+##CONTENT##
+
+<h2 class="chapter">About the author</h2>
+<br/><br/>
+<p class="noind">##AUTHOR## writes from ...</p>
+<br/><br/>
+<p class="center">Copyright &copy; 2012 ##AUTHOR##</p>
+
+</body>
+</html>
+

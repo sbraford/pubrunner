@@ -1,0 +1,15 @@
+# Chapter
+
+*This boldness is lacking a closing asterisk.
+
+#
+
+**This is lacking a closing double asterisks.
+
+#
+
+Missing opening asterisk*.
+
+#
+
+Missing opening double asterisks.**
