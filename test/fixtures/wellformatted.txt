@@ -7,12 +7,12 @@ Here is some text. **Bold text**. *Italics text*.
 # Chapter 2
 
 Let's add some dialog.
-	"They got the same shit over there that they got here, but there it's just a little different," said Vincent.
+	"They haveth the same general itemry over whence as they do hither, it is just a bit altered," said Vincent.
 	"Example," said Jules.
-	"You know what the call a quarter pounder with cheese, in Paris?"
-	"They don't call it a quarter pounder with cheese?"
-	"No they got the metric system, they don't know what the fuck a quarter pounder is."
-	"Then what do they call it?"
+	"Do thou knoweth by what name a quarter pounder with cheese is called in Paris?"
+	"They do not simply call it a quarter pounder with cheese?"
+	"No, for their system is of metric notation."
+	"Then by what name is it called?"
 	"Royale with cheese."
 
 This line should not be indented.

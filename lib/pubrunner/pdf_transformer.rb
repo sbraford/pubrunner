@@ -46,7 +46,7 @@ module Pubrunner
         ext = File.extname(html_file_path) # .html or .htm
         basename = File.basename(html_file_path, ext)
         output_path = File.join(dir, "#{basename}.pdf")
-        out = `prince #{html_file_path} -o #{output_path}`
+        out = `prince "#{html_file_path}" -o "#{output_path}"`
         puts out
       end
       

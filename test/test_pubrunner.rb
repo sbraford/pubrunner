@@ -5,8 +5,11 @@ class PubrunnerTest < Test::Unit::TestCase
   include Pubrunner
   
   def test_pubdown_processor
-    strong = PubdownProcessor.strongify("Go **boldly** my friend")
-    assert_equal "Go <b>boldly</b> my friend", strong
+    bold = PubdownProcessor.embolden("Go **boldly** my friend")
+    assert_equal "Go <b>boldly</b> my friend", bold
+
+    strong = PubdownProcessor.strongify("Be **strong** like Hulk")
+    assert_equal "Be <strong>strong</strong> like Hulk", strong
 
     emph = PubdownProcessor.emphasize("in *em* yup")
     assert_equal "in <em>em</em> yup", emph
@@ -81,7 +84,7 @@ class PubrunnerTest < Test::Unit::TestCase
     assert b.chapters.first.content.include?('**Bold text**')
     assert b.chapters.first.content.include?('*Italics text*')
     
-    assert b.chapters[1].content.include?("\t\"They got the same")
+    assert b.chapters[1].content.include?("\t\"They haveth the same")
   end
 
   def test_processor_autoincrement_chapter_names

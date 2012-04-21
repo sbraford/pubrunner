@@ -99,21 +99,39 @@ module Pubrunner
           puts "config.yml file is missing a required key: document"
           exit
         end
-        puts "Settings OK ..."
         document_filename = config['document']
-        project_name = File.basename(document_filename, File.extname(document_filename)) # e.g. "Foo" if filename is "Foo.txt" or "Foo Bar" if "Foo Bar.txt"
+        # project name: "Foo" if filename is "Foo.txt" or "Foo Bar" if "Foo Bar.txt"
+        project_name = File.basename(document_filename, File.extname(document_filename))
         document_path = File.join(project_dir, document_filename)
+        if !File.exist?(document_path)
+          puts "Document does not exist: #{document_path}"
+          puts "The document filename is specified as the 'document' key in config.yml."
+          exit
+        end
+
         output_path = File.join(project_dir, 'output')
         if !File.directory?(output_path)
           puts "Creating output folder: #{output_path}"
           File.mkdir(output_path)
         end
+        auto_increment = config['auto_increment_chapter_names'] ? config['auto_increment_chapter_names'] : false
+        if config['strict']
+          puts "Strict mode is enabled. Checking markup ..."
+          document_text = IO.read(document_path)
+          mc = Pubrunner::MarkupChecker.new(document_text)
+          if mc.warnings_count > 0
+            puts "Markup warnings count: #{mc.warnings_count}"
+            puts "Fix markup warnings before proceeding. (Or set 'strict' to false in config.yml)"
+            exit
+          end
+        elsif config['strict'] && (false == config['strict'])
+          puts "Strict mode is disabled. Results may be wonky ..."
+        end
+        processor = Processor.new(document_path, auto_increment)
+        book = processor.process
 
         if config['kindle']
           puts "Starting kindle HTML output generation ..."
-          auto_increment = config['auto_increment_chapter_names'] ? config['auto_increment_chapter_names'] : false
-          processor = Processor.new(document_path, auto_increment)
-          book = processor.process
           kindle_transformer = Transformer::Kindle.new(book)
           kindle_book = kindle_transformer.transform
           kindle_book.title = config['title']
@@ -139,29 +157,41 @@ module Pubrunner
         end
         if config['pdf']
           puts "Starting HTML generation for creation of PDF ..."
-          auto_increment = config['auto_increment_chapter_names'] ? config['auto_increment_chapter_names'] : false
-          processor = Processor.new(document_path, auto_increment)
-          book = processor.process
           pdf_transformer = Transformer::Pdf.new(book)
           pdf_book = pdf_transformer.transform
           pdf_book.title = config['title']
           pdf_book.author = config['author']
 
           pdf_html_path = File.join(project_dir, 'output', "#{project_name}_pdf.html")
-          pdf_path = File.join(project_dir, 'output', "#{project_name}.pdf")
+          pdf_path = File.join(project_dir, 'output', "#{project_name}_pdf.pdf")
           template_path = File.join(project_dir, 'templates', 'pdf_template.html')
           # Save the generated Kindle HTML file
           Transformer::Pdf.save(pdf_book, pdf_html_path, template_path)
           if File.exist?(pdf_html_path)
-            puts "Generating PDF ..."
+            puts "Generating PDF via Prince ..."
             Transformer::Pdf.generate_pdf(pdf_html_path)
             if File.exist?(pdf_path)
               new_pdf_path = File.join(project_dir, 'output', "#{project_name}.pdf")
               FileUtils.mv(pdf_path, new_pdf_path)
               puts "Generated PDF: #{new_pdf_path}"
+            else
+              puts "Failed to generate PDF. The Prince XML binary must be in your path for PDF generation to work."
             end
           end
-          
+        end
+        if config['octopress']
+          octo_dir = File.join(project_dir, 'output', 'octopress')
+          Pubrunner::Utils.clean_folder(octo_dir)
+          puts "Starting Octopress post generation ..."
+
+          FileUtils.mkdir(octo_dir) unless File.directory?(octo_dir)
+          octopress_transformer = Transformer::Octopress.new(book)          
+          octopress_transformer.transform_and_save(octo_dir)
+          posts_path = File.join(octo_dir, '*.html')
+          puts "Pubrunner generated the following Octopress posts:"
+          Dir[posts_path].each do |f|
+            puts f
+          end
         end
       when 'clean'
         config_yml = File.join(@working_directory, 'config.yml')
@@ -170,12 +200,7 @@ module Pubrunner
           exit
         end
         output_dir = File.join(@working_directory, 'output')
-        Dir.foreach(output_dir) do |f|
-          if f == '.' or f == '..' then next
-          elsif File.directory?(f) then FileUtils.rm_rf(f)
-          else FileUtils.rm( f )
-          end
-        end
+        Pubrunner::Utils.clean_folder(output_dir)
       else
         puts "invalid command"
       end

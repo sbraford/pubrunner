@@ -1,10 +1,14 @@
-Dir[File.dirname(__FILE__) + '/pubrunner/*.rb'].each { |file| require file }
+require 'pubrunner/command_line.rb'
+require 'pubrunner/kindle_transformer'
+require 'pubrunner/markup_checker'
+require 'pubrunner/octopress_transformer'
+require 'pubrunner/pdf_transformer'
+require 'pubrunner/pubdown_processor'
+require 'pubrunner/utils'
+require 'pubrunner/version'
 
 module Pubrunner
 
-  class CommandLine
-  end
-  
   class Processor
     
     def initialize(path, auto_increment_chapter_names = false)

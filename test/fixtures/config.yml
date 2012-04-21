@@ -1,5 +1,6 @@
 title: Your Title
 author: Your Name
+strict: true
 kindle: true
 pdf: true
 kindlegen_mobi: false

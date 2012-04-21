@@ -35,7 +35,23 @@ module Pubrunner
           post.sub!('##DATE##', chapter_date.strftime("%Y-%m-%d %H:%M"))
           post.sub!('##COMMENTS##', @comments.to_s)
           
-          post << PubdownProcessor.transform_pubdown(chapter.content)
+          content = PubdownProcessor.transform_pubdown_octo(chapter.content)
+          content.each_line do |line|
+            line.rstrip!
+            if '' == line
+              post << "\n"
+              next
+            end
+
+            if line[0] == "\t"
+              # Line begins with tab
+              line.lstrip!
+              line_new = '<p>' + line + '</p>'
+            else
+              line_new = '<br/><p>' + line + '</p>'
+            end
+            post << "#{line_new}\n"
+          end
           
           post_filename = octopressify_filename(chapter.title, chapter_date)
           

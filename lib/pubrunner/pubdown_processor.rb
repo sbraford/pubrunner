@@ -2,6 +2,11 @@ module Pubrunner
   class PubdownProcessor
 
     def self.transform_pubdown(content)
+      PubdownProcessor.emphasize(PubdownProcessor.embolden(PubdownProcessor.strip_right_whitespace_and_add_linebreaks(content)))
+    end
+    
+    # Octopress uses the <strong> tag by default for bold, whereas Kindle uses <b>, hence the method.
+    def self.transform_pubdown_octo(content)
       PubdownProcessor.emphasize(PubdownProcessor.strongify(PubdownProcessor.strip_right_whitespace_and_add_linebreaks(content)))
     end
 
@@ -14,7 +19,7 @@ module Pubrunner
     end
 
     # Swap ** for <b> pairs
-    def self.strongify(content)
+    def self.embolden(content)
       content_new = ''
       content.each_line do |line|
         matches = line.scan(/\*\*/)
@@ -23,6 +28,22 @@ module Pubrunner
         num_pairs.times do
           line.sub!(/\*\*/, '<b>')
           line.sub!(/\*\*/, '</b>')
+        end
+        content_new += line
+      end
+      content_new
+    end
+
+    # Swap ** for <strong> pairs
+    def self.strongify(content)
+      content_new = ''
+      content.each_line do |line|
+        matches = line.scan(/\*\*/)
+        match_count = matches.size
+        num_pairs = matches.size / 2
+        num_pairs.times do
+          line.sub!(/\*\*/, '<strong>')
+          line.sub!(/\*\*/, '</strong>')
         end
         content_new += line
       end
