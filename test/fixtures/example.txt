@@ -16,7 +16,7 @@ Chapters are denoted by a pound sign. (Note: the pound sign must be the first ch
 
 How about formatting, like bold and italics? **This text** will be bold, because it's surrounded by a pair of double asterisks.
 	*This text* will be in italics, as it's surrounded by single asterisks. Pubrunner is designed to handle limited formatting (mainly: bold, italics, chapter headings, tab indentation and chapter sections).
-
+	Em dashes are formed--like this--by stringing two dashes together. Simple!
 
 Start new chapter sections like this. Leave a line break or two for separation (above two lines), then begin a new paragraph (omit the tab character for the paragraph to be left-justified, like this one).
 

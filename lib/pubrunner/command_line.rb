@@ -8,6 +8,9 @@ module Pubrunner
     def initialize(working_directory, argv)
       @working_directory = working_directory
       @argv = argv
+      @global_config_path = File.join(ENV['HOME'], '.pubrunner')
+      @global_config = load_global_config
+      load_plugins
       start
     end
     
@@ -68,14 +71,13 @@ module Pubrunner
         puts "   |- config.yml - contains project settings (author, title, etc)"
         puts "   |- #{document_filename} - your document"
         puts "   |- example.txt - example document (see how pubrunner formatting works)"
-        puts "   \\- output - folder where pubrunner will place generated files (PDFs, Kindle HTMl, .mobi files, etc)"
+        puts "   \\- output - folder where pubrunner will place generated files (PDFs, Kindle HTML, .mobi files, etc)"
         puts "   \\- templates"
-        puts "      |- kindle_template.html - kindle template document (plain, editable HTML)"
+        puts "      |- kindle_template.html - Kindle template document (plain, editable HTML)"
         puts "      |- pdf_template.html - PDF template document (plain, editable HTML)"
         puts "\n"
         
       when 'go', 'run', 'process', 'execute'
-        puts "Starting pubrunner ... checking settings"
         path_or_name = @argv[2]
         if path_or_name.nil?
           # Execute Pubrunner on current working directory
@@ -90,7 +92,7 @@ module Pubrunner
         end
         config_yml = File.join(project_dir, 'config.yml')
         if !File.exist?(config_yml)
-          puts "A 'config.yml' file was not found in directory: #{config_yml}"
+          puts "A 'config.yml' file was not found in directory: #{@working_directory}"
           puts "The specified target does not appear to be a valid pubrunner project"
           exit
         end
@@ -129,6 +131,26 @@ module Pubrunner
         end
         processor = Processor.new(document_path, auto_increment)
         book = processor.process
+        # Build an environment variable that looks something like:
+        #   {'working_directory' => '/some/dir',
+        #    'argv' => ['the', 'arguments'],
+        #    'global_config' => (~/.pubrunner file parsed from YAML into a Hash),
+        #    'config' =>  (config file parsed from YAML into a Hash),
+        #    'project_name' => 'Some Project',
+        #    'project_directory' => '/path/to/project/directory',
+        #    'document_path' => '/full/path/to/document.txt',
+        #    'book' => ( a pre-processed book object, using the autoincrement chapter settings, etc )
+        #   }
+        @environment = {
+          'working_directory' => @working_directory,
+          'argv' => @argv,
+          'global_config' => @global_config,
+          'config' =>  config,
+          'project_name' => project_name,
+          'project_directory' => project_dir,
+          'document_path' => document_path,
+          'book' => book
+          }
 
         if config['kindle']
           puts "Starting kindle HTML output generation ..."
@@ -181,16 +203,38 @@ module Pubrunner
         end
         if config['octopress']
           octo_dir = File.join(project_dir, 'output', 'octopress')
+          FileUtils.mkdir(octo_dir) unless File.directory?(octo_dir)
           Pubrunner::Utils.clean_folder(octo_dir)
           puts "Starting Octopress post generation ..."
 
-          FileUtils.mkdir(octo_dir) unless File.directory?(octo_dir)
           octopress_transformer = Transformer::Octopress.new(book)          
           octopress_transformer.transform_and_save(octo_dir)
           posts_path = File.join(octo_dir, '*.html')
           puts "Pubrunner generated the following Octopress posts:"
           Dir[posts_path].each do |f|
             puts f
+          end
+        end
+        if config['custom']
+          # Possible formats for config['custom']
+          #  A) Single class name, e.g.
+          #       FooTransformer
+          #   or
+          #       ModuleName::MyCustomClass
+          #  B) Comma-separated list of classes, e.g.
+          #       FirstTransformer, AnotherTransformer
+          #   or
+          #       Foo::Bar::TransformerOne, YetAnotherTransformer
+          #   etc
+          
+          custom_list = config['custom']
+          klasses = custom_list.split(',')
+          klasses.map! { |class_name| class_name.strip } # Remove trailing/leading spaces
+          
+          klasses.each do |class_name|
+            # Call the "execute" method on each class. This is by convention, to simplify the plugin
+            #   development process. The "execute" method takes a single param: the @environment variable.
+            Utils.class_send(class_name, 'execute', @environment)
           end
         end
       when 'clean'
@@ -201,9 +245,84 @@ module Pubrunner
         end
         output_dir = File.join(@working_directory, 'output')
         Pubrunner::Utils.clean_folder(output_dir)
+      when 'wordcount', 'wc'
+        config_yml = File.join(@working_directory, 'config.yml')
+        if !File.exist?(config_yml)
+          puts "A 'config.yml' file was not found in directory: #{@working_directory}"
+          puts "The working directory does not appear to be a pubrunner project."
+          exit
+        end
+        config = YAML.load_file(config_yml)
+        if config['document'].nil?
+          puts "config.yml file is missing a required key: document"
+          exit
+        end
+        document_filename = config['document']
+        document_path = File.join(@working_directory, document_filename)
+        doc = IO.read(document_path)
+        words = doc.split
+        puts "Word count: #{words.size}"
+      when 'zip'
+        config_yml = File.join(@working_directory, 'config.yml')
+        if !File.exist?(config_yml)
+          puts "A 'config.yml' file was not found in directory: #{@working_directory}"
+          puts "The working directory does not appear to be a pubrunner project."
+          exit
+        end
+        config = YAML.load_file(config_yml)
+        if config['document'].nil?
+          puts "config.yml file is missing a required key: document"
+          exit
+        end
+        document_filename = config['document']
+        project_name = File.basename(document_filename, File.extname(document_filename))
+        parent_dir = File.expand_path("..", @working_directory)
+        zipfile_path = File.join(parent_dir, "#{project_name}.zip")
+        FileUtils.rm( zipfile_path ) if File.exist?(zipfile_path)
+        zip_cmd = "zip -r \"#{zipfile_path}\" \"#{@working_directory}\""
+        puts "Zipping folder contents with command: #{zip_cmd}"
+        out = `#{zip_cmd}`
+        puts out
+        if File.exist?(zipfile_path)
+          puts "Pubrunner project contents zipped: #{zipfile_path}"
+        else
+          puts "There seems to have been a problem zipping project contents. Is there a 'zip' binary in your path?"
+        end
       else
         puts "invalid command"
       end
+    end
+    
+    def load_global_config
+      return {} unless File.exist?(@global_config_path)
+      config = {}
+      config = YAML.load_file(@global_config_path)
+      if !config.is_a?(Hash)
+        raise GlobalConfigError, "Your global configuration file appears malformed:\n#{@global_config_path}\nIt should be a YAML-encoded Hash object."
+      end
+      config ||= {}  # config should not be nil
+      config
+    end
+    
+    def load_plugins
+      plugin_dir = (@global_config['plugin_directory'] || '').strip
+      return unless !plugin_dir.empty?
+      if !File.directory?(plugin_dir)
+        puts "The plugin directory defined in your global ~/.pubrunner config file does not appear to be a valid directory."
+        puts "Skipping plugin loading ..."
+        return
+      end
+      plugin_mask = File.join(plugin_dir, '*.rb')
+      plugins = []
+      Dir.glob(plugin_mask).each do |f|
+        # Add the plugin path to the plugins array if it's not a directory
+        plugins.push(f) if !File.directory?(f)
+      end
+      plugins.each do |f|
+        require f
+        puts "Loaded plugin: #{f}"
+      end
+
     end
     
   end

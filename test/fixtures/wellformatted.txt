@@ -18,6 +18,9 @@ Let's add some dialog.
 This line should not be indented.
 	This one should.
 
+This line contains an em dash--or does it?
+	Day & Night is a Cudi classic. This line contains <special> characters.
+
 # A Third Chapter
 
 Two households, both alike in dignity,

@@ -85,7 +85,7 @@ module Pubrunner
         unless File.exists?(target_path)
           raise FileNotFoundError, "kindlegen target file not found: #{target_path}"
         end
-        out = `kindlegen #{target_path}`
+        out = `kindlegen "#{target_path}"`
         puts out
       end
             

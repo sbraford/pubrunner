@@ -95,6 +95,10 @@ class KindleTransformerTest < Test::Unit::TestCase
     
     assert kindle_book.chapters.first.content.include?("<b>Bold text</b>")
     assert kindle_book.chapters.first.content.include?("<em>Italics text</em>")
+    
+    assert kindle_book.chapters[1].content.include?('Day &amp; Night')
+    assert kindle_book.chapters[1].content.include?('&lt;special&gt; characters')
+
   end
     
 end

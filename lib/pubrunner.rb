@@ -1,11 +1,8 @@
-require 'pubrunner/command_line.rb'
-require 'pubrunner/kindle_transformer'
-require 'pubrunner/markup_checker'
-require 'pubrunner/octopress_transformer'
-require 'pubrunner/pdf_transformer'
-require 'pubrunner/pubdown_processor'
-require 'pubrunner/utils'
-require 'pubrunner/version'
+pubrunner_mask = File.join(File.dirname(__FILE__), 'pubrunner', '*.rb')
+Dir[pubrunner_mask].each {|file| require file }
+
+# require './pubrunner/command_line.rb'
+# require 'pubrunner/command_line.rb'
 
 module Pubrunner
 
@@ -29,7 +26,6 @@ module Pubrunner
       lines_new = []
       lines.each do |line|
         if (line.size >= 2) && (line[0,2] == '//')
-          # puts "Comment found: #{line}"
           next
         end
         lines_new << line
@@ -108,6 +104,9 @@ module Pubrunner
   end
   
   class FileNotFoundError < RuntimeError
+  end
+
+  class GlobalConfigError < RuntimeError
   end
 
 end

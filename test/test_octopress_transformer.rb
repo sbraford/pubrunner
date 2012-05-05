@@ -18,10 +18,10 @@ class OctopressTransformerTest < Test::Unit::TestCase
         chapt_one = IO.read(f)
         assert chapt_one.include?('<strong>Bold text</strong>')
         assert chapt_one.include?('<em>Italics text</em>')
-      end
-      if f.include?('chapter-2')
+      elsif f.include?('chapter-2')
         chapt_two = IO.read(f)
-        
+        assert chapt_two.include?('Day &amp; Night')
+        assert chapt_two.include?('&lt;special&gt; characters')
       end
     end
     assert_equal 3, Dir[octo_posts_path].entries.size
