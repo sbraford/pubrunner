@@ -93,7 +93,21 @@ class PubrunnerTest < Test::Unit::TestCase
     b = p.process
     assert_equal 'Chapter 1', b.chapters.first.title
     assert_equal 'Chapter 2', b.chapters[1].title
-    assert_equal 'Chapter 3', b.chapters[2].title    
+    assert_equal 'Chapter 3', b.chapters[2].title
+    
+    assert_equal 1, b.chapters[0].index
+    assert_equal 2, b.chapters[1].index
+    assert_equal 3, b.chapters[2].index
+  end
+
+  def test_processor_autoincrement_with_forced_chapter_names
+    wellformatted_path = File.dirname(__FILE__) + '/fixtures/force_chapter_name.txt'
+    p = Processor.new(wellformatted_path, true)
+    b = p.process
+    assert_equal 'Preface', b.chapters.first.title
+    assert_equal 'Chapter 1', b.chapters[1].title
+    assert_equal 'Chapter 2', b.chapters[2].title
+    assert_equal 'Epilogue', b.chapters[3].title    
   end
   
   def test_book_new

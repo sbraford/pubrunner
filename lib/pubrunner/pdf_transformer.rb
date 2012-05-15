@@ -14,7 +14,7 @@ module Pubrunner
         pdf_book = Book.new(@book.title, @book.author)
         pdf_book.chapter_template = chapter_template
         @book.chapters.each do |chapter|
-          pdf_ch = Chapter.new(chapter.title)
+          pdf_ch = Chapter.new(chapter.title, nil, chapter.index)
           pdf_book.add_chapter(pdf_ch)
           marked_up_content = PubdownProcessor.transform_pubdown(chapter.content)
           marked_up_content.lines.each do |line|

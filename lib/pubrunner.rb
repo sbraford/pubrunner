@@ -31,20 +31,29 @@ module Pubrunner
         lines_new << line
       end
       lines = lines_new
-      current_chapter_number = 0
+      current_chapter_index = 0
+      current_display_chapter_number = 0
       current_chapter = nil
       lines.each do |line|
         is_whitespace = ( '' == line )
         if (line.size > 0) && ('#' == line[0])
           # We have a new chapter
-          if @auto_increment_chapter_names
-            current_chapter_number += 1
-            chapter_name = "Chapter #{current_chapter_number}"
+          current_chapter_index += 1
+          force_chapter_title_name = false
+          if (line.size > 1) && ('!' == line[1]) # If the line begins with "#!" -- force chapter title name
+            force_chapter_title_name = true
+          end
+
+          if force_chapter_title_name
+            chapter_name = line.slice(2, line.size).strip
+          elsif @auto_increment_chapter_names
+            current_display_chapter_number += 1
+            chapter_name = "Chapter #{current_display_chapter_number}"
           else
             chapter_name = line.slice(1, line.size).strip
           end
           @book.add_chapter(current_chapter) if current_chapter
-          current_chapter = Chapter.new(chapter_name, '')
+          current_chapter = Chapter.new(chapter_name, '', current_chapter_index)
           next
         end
         
@@ -53,7 +62,7 @@ module Pubrunner
           puts "warning: content appears before a chapter heading. content must go into a chapter bucket. content line text: #{line}"
           next
         end
-        if current_chapter # don't include whitespace before the first chapter heading
+        if current_chapter
           current_chapter.content << (line + "\n")
         end
       end
@@ -92,12 +101,17 @@ module Pubrunner
   end
   
   class Chapter
-    def initialize(title = nil, content = nil)
+    attr_accessor :title, :content, :index
+    def initialize(title = nil, content = nil, index = nil)
       content ||= ''
-      @title, @content = title, content
+      if !index.nil?
+        raise RuntimeError, "Chapter index must be a non-negative number" unless index.integer? && (index >= 0)
+      end
+      @title, @content, @index = title, content, index
     end
-    attr_accessor :title
-    attr_accessor :content
+    def ch_idx
+      @index
+    end
   end
 
   class MarkupError < RuntimeError

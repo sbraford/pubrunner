@@ -43,6 +43,10 @@ class KindleTransformerTest < Test::Unit::TestCase
     assert_equal 3, kindle_html.scan('Emmanuel Goldstein').count
     assert_equal 4, kindle_html.scan('<mbp:pagebreak />').count
 
+    assert_equal 1, kindle_html.scan('<a name="ch1">').count
+    assert_equal 1, kindle_html.scan('<a name="ch2">').count
+    assert_equal 1, kindle_html.scan('<a name="ch3">').count
+
     File.delete(path)
   end
 

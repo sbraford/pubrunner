@@ -14,7 +14,7 @@ module Pubrunner
         kindle_book = Book.new(@book.title, @book.author)
         kindle_book.chapter_template = chapter_template
         @book.chapters.each do |chapter|
-          kindle_ch = Chapter.new(chapter.title)
+          kindle_ch = Chapter.new(chapter.title, nil, chapter.index)
           kindle_book.add_chapter(kindle_ch)
           marked_up_content = PubdownProcessor.transform_pubdown(chapter.content)
           marked_up_content.lines.each do |line|
@@ -44,7 +44,10 @@ module Pubrunner
       def self.generate_meat(kindle_book)
         html = ''
         kindle_book.chapters.each do |chapter|
-          chapter_html = kindle_book.chapter_template.sub('##CHAPTER_TITLE##', chapter.title)
+          chapter_html = kindle_book.chapter_template.dup
+          chapter_html.sub!('##CHAPTER_TITLE##', chapter.title)
+          chapter_html.sub!('##CHAPTER_INDEX##', chapter.index.to_s)
+          
           html << chapter_html
           html << chapter.content
           html << "\n"
@@ -92,6 +95,7 @@ module Pubrunner
       def self.default_chapter_template
         <<-EOM
 <mbp:pagebreak />
+<a name="ch##CHAPTER_INDEX##"></a>
 <p height="3em">&nbsp;</p>
 <h2>##CHAPTER_TITLE##</h2>
 <p height="3em">&nbsp;</p>

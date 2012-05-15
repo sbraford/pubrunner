@@ -151,7 +151,19 @@ module Pubrunner
           'document_path' => document_path,
           'book' => book
           }
-
+        if config['generate_toc']
+          toc_path = File.join(project_dir, 'output', 'toc.html')
+          toc_template_path = File.join(project_dir, 'templates', 'toc_template.html')
+          FileUtils.rm(toc_path) if File.exist?(toc_path)
+          toc_gen = TocGenerator.new(book)
+          toc_gen.generate(toc_template_path, toc_path)
+          if File.exist?(toc_path)
+            puts "Generated HTML Table of Contents file: #{toc_path}"
+          else
+            puts "There was a problem generating the HTML Table of Contents file."
+          end
+        end
+        kindle_output_path = File.join(project_dir, 'output', "#{project_name}_kindle.html")
         if config['kindle']
           puts "Starting kindle HTML output generation ..."
           kindle_transformer = Transformer::Kindle.new(book)
@@ -159,22 +171,25 @@ module Pubrunner
           kindle_book.title = config['title']
           kindle_book.author = config['author']
           
-          output_path = File.join(project_dir, 'output', "#{project_name}_kindle.html")
-          mobi_path = File.join(project_dir, 'output', "#{project_name}_kindle.mobi")
           template_path = File.join(project_dir, 'templates', 'kindle_template.html')
           # Save the generated Kindle HTML file
-          Transformer::Kindle.save(kindle_book, output_path, template_path)
+          Transformer::Kindle.save(kindle_book, kindle_output_path, template_path)
           puts "Generated Kindle-ready HTML file: #{output_path}"
-          if config['kindlegen_mobi']
-            Transformer::Kindle.kindlegen(output_path)
-            if File.exist?(mobi_path)
-              new_mobi_path = File.join(project_dir, 'output', "#{project_name}.mobi")
-              # Rename .mobi file
-              FileUtils.mv(mobi_path, new_mobi_path)
-              puts "Generated Kindle-compatible .mobi file via kindlegen: #{new_mobi_path}"
-            else
-              puts "Mobi file was not generated. Perhaps 'kindlegen' is not in your path?"
-            end
+        end
+        if config['kindlegen_mobi']
+          mobi_path = File.join(project_dir, 'output', "#{project_name}_kindle.mobi")
+          unless File.exist?(kindle_output_path)
+            raise RuntimeError, "Kindle HTML file does not exist. Expected path: #{kindle_output_path}"
+          end
+          FileUtils.rm(mobi_path) if File.exist?(mobi_path)
+          Transformer::Kindle.kindlegen(kindle_output_path)
+          if File.exist?(mobi_path)
+            # We rename the .mobi path so it doesn't have the _kindle in the filename
+            new_mobi_path = File.join(project_dir, 'output', "#{project_name}.mobi")
+            FileUtils.mv(mobi_path, new_mobi_path)
+            puts "Generated Kindle-compatible .mobi file via kindlegen: #{new_mobi_path}"           
+          else
+            puts "Mobi file was not generated. Perhaps 'kindlegen' is not in your path?"
           end
         end
         if config['pdf']

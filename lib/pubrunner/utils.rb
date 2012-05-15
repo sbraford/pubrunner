@@ -2,7 +2,7 @@ module Pubrunner
 
   class Utils
     
-    # Converts a block of text like:
+    # Converts a single line / block of text like:
     #     "She dugga dugga ..."
     # To:
     #     &ldquo;She dugga dugga ...&rdquo;

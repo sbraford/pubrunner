@@ -3,7 +3,6 @@ module Pubrunner
   class MarkupChecker
     attr_reader :warnings_count
     
-    # Strict mode will cause the checker to exit if a mismatched pair is found
     def initialize(content)
       @content = content
       @warnings_count = 0
